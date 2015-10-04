@@ -1,0 +1,19 @@
+var spawn = require('child_process').spawn;
+
+var rc522 = require("rc522-rfid2");
+
+rc522.rc522(function(rfidSerialNumber){
+    console.log(rfidSerialNumber);
+});
+
+
+
+setTimeout(function(){
+console.log('here!');
+console.log('test:' + rc522.test());
+var pid = rc522.child().pid;
+console.log('pid: ' + pid);
+rc522.shutItDown();
+rc522.child().kill('SIGKILL');
+//spawn('kill',['-9',pid]);
+},5000);
