@@ -89,12 +89,12 @@ setupGpio()
     return setState(cur);
 })
 .then(function(){
-    return rc522.takeReading(2000);
+    return rc522.takeReading(4000);
 })
 .then(function(val){
   //  console.log('read: ' + val); 
 //    console.log('all done!');
-    if(val != 'none') console.log(val);
+    if(val != 'noneff') console.log(val);
     loop(!cur);
 });
 
