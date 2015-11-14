@@ -34,30 +34,31 @@ function setupGpio(){
 function setState(state){
     var promises = [];
     if(state === 1){
-      promises.push(gpioWrite(resetA,false));
-      promises.push(gpioWrite(resetB,true));
-      promises.push(gpioWrite(resetC,true));
-    }else if(state === 2){
       promises.push(gpioWrite(resetA,true));
       promises.push(gpioWrite(resetB,false));
-      promises.push(gpioWrite(resetC,true));
-    } else  if(state === 3){
-      promises.push(gpioWrite(resetA,true));
+      promises.push(gpioWrite(resetC,false));
+    }else if(state === 2){
+      promises.push(gpioWrite(resetA,false));
       promises.push(gpioWrite(resetB,true));
       promises.push(gpioWrite(resetC,false));
+    } else  if(state === 3){
+      promises.push(gpioWrite(resetA,false));
+      promises.push(gpioWrite(resetB,false));
+      promises.push(gpioWrite(resetC,true));
     }
     return Q.all(promises);
 }
 
 
 function loop(cur){
+  
   console.log('starting loop: ' + cur);
   setupGpio()
   .then(function(){
       return setState(cur);
   })
   .then(function(){
-      return rc522.takeReading(4000);
+      return rc522.takeReading(3000);
   })
   .then(function(val){
       if(val !== 'none') 
@@ -65,6 +66,10 @@ function loop(cur){
       cur = cur + 1;
       if(cur > 3) cur = 1;
       loop(cur);
+  })
+  .catch(function(val){
+    console.log('failed to read for state ' + cur);
+    loop(cur);
   });
 
 }
