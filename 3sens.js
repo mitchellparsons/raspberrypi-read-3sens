@@ -31,6 +31,30 @@ function setupGpio(){
     return Q.all(promises);
 }
 
+function blankAll(){
+var t = false;
+  var promises = [
+    gpioWrite(resetA, t),
+    gpioWrite(resetB, t),
+    gpioWrite(resetC, t)
+  ];
+  return Q.all(promises);
+}
+
+function setPin(pin){
+  return gpioWrite(pin, true);
+}
+
+function setStater(state){
+  if(state === 1)
+    return setPin(resetA);
+  else if(state === 2)
+    return setPin(resetB);
+  else if(state === 3)
+    return setPin(resetC);
+  console.log('state not properly set');
+}
+
 function setState(state){
     var promises = [];
     if(state === 1){
@@ -53,19 +77,25 @@ function setState(state){
 function loop(cur){
   
   console.log('starting loop: ' + cur);
-  setupGpio()
+//  setupGpio()
+  blankAll()
+  .then(delay)
   .then(function(){
-      return setState(cur);
+      return setStater(cur);
   })
+  .then(delay)
   .then(function(){
-      return rc522.takeReading(3000);
+      return rc522.takeReading(10000);
   })
   .then(function(val){
-      if(val !== 'none') 
-        console.log(val);
+      console.log(val);
       cur = cur + 1;
       if(cur > 3) cur = 1;
-      loop(cur);
+      longDelay()
+      .then(setupGpio)
+      .then(function(){	
+        loop(cur);
+      });
   })
   .catch(function(val){
     console.log('failed to read for state ' + cur);
@@ -74,4 +104,19 @@ function loop(cur){
 
 }
 
-loop(1);
+setupGpio()
+.then(function(){
+  loop(1);
+});
+
+function delay(){
+    var deferred = Q.defer();
+    setTimeout(function(){deferred.resolve();},50);
+    return deferred.promise;
+}
+
+function longDelay(){
+    var deferred = Q.defer();
+    setTimeout(function(){deferred.resolve();},5000);
+    return deferred.promise;
+}
